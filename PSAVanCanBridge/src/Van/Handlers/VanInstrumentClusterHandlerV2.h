@@ -46,6 +46,9 @@ public:
         dataToBridge->GearboxMode = packet.data.AutomaticGearbox.bva_bvmp_selection;
         dataToBridge->GearboxSelection = packet.data.AutomaticGearbox.gearbox_selection_mode;
         dataToBridge->GearboxPosition = packet.data.AutomaticGearbox.gear_position;
+        dataToBridge->Van_4FC12 = packet.data.Van_4FC12;
+        dataToBridge->Van_4FC13 = packet.data.Van_4FC13;
+        dataToBridge->Van_4FC14 = packet.data.Van_4FC14;
 
         ignitionDataToBridge->LowBeamOn = dataToBridge->LightStatuses.status.LowBeam;
 

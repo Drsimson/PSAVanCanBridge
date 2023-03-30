@@ -6,6 +6,7 @@
 
 #include "LightStatus.h"
 #include "DashIcons1.h"
+#include "IntegRadioHelper.h"
 
 struct VanDataToBridgeToCan
 {
@@ -32,6 +33,7 @@ struct VanDataToBridgeToCan
     uint8_t FuelLevel = 0;
     LightStatus LightStatuses;
     DashIcons1 DashIcons1Field;
+    IntegRadioHelper IntegRadio;
     uint8_t LeftStickButtonPressed = 0;
     uint8_t AirConDirection = 0;
     int8_t OilTemperature = 0;
@@ -41,5 +43,10 @@ struct VanDataToBridgeToCan
     uint8_t GearboxMode = 0;
     uint8_t GearboxSelection = 0;
     uint16_t Distance = 0;
+    int8_t WaterTemperature = 0;
+    uint8_t brightness = 0;
+    uint8_t Van_4FC12 = 0;
+    uint8_t Van_4FC13 = 0;
+    uint8_t Van_4FC14 = 0;
 };
 #endif

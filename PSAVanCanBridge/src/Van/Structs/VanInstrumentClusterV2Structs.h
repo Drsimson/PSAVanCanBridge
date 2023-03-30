@@ -28,12 +28,14 @@ const uint8_t VAN_GEAR_MODE_V2_SNOW_SEQUENTIAL_ECO = 7;
 const uint8_t VAN_GEAR_V2_SELECTION_BVA = 0;
 const uint8_t VAN_GEAR_V2_SELECTION_BVM = 1;
 
-const uint8_t VAN_CC_OFF           = 0x41;
-const uint8_t VAN_CC_ON            = 0x49;
-const uint8_t VAN_CC_SPEED_BLINK   = 0x59;
-const uint8_t VAN_CC_LIMITER       = 0x81;
-const uint8_t VAN_CC_LIMITER_BLINK = 0x89;
-
+/*
+const uint8_t VAN_CC_MODE_SHOW_OFF      = 0x31;
+const uint8_t VAN_CC_MODE_OFF           = 0x41;
+const uint8_t VAN_CC_MODE_ON            = 0x49;
+const uint8_t VAN_CC_MODE_SPEED_BLINK   = 0x59;
+const uint8_t VAN_CC_MODE_LIMITER       = 0x81;
+const uint8_t VAN_CC_MODE_LIMITER_BLINK = 0x89;
+*/
 // Read right to left in documentation
 typedef struct {
     uint8_t memo_status                  : 1; // bit 0
@@ -77,6 +79,10 @@ typedef struct {
     uint8_t dipped_beam                  : 1; // bit 7
 } VanInstrumentClusterV2Byte6Struct;
 
+typedef struct {
+    uint8_t CruiseControl_Mode    : 1; // bit 0
+} VanInstrumentClusterV2Byte12Struct;
+
 // Read left to right in documentation
 struct VanInstrumentClusterV2Structs {
     VanInstrumentClusterV2Byte1Struct Field1;
@@ -90,9 +96,9 @@ struct VanInstrumentClusterV2Structs {
     uint8_t OilLevel;
     uint8_t Field10;
     uint8_t LPGFuelLevel;
-    uint8_t CruiseControlStatus;
-    uint8_t CruiseControlSpeed;
-    uint8_t Field14;
+    uint8_t Van_4FC12;
+    uint8_t Van_4FC13;
+    uint8_t Van_4FC14;
 };
 
 union VanInstrumentClusterPacketV2 {

@@ -19,6 +19,7 @@
 #include "src/Helpers/GetDeviceInfoEsp32.h"
 #include "src/Can/Structs/CanDisplayStructs.h"
 #include "src/Can/Structs/CanDash1Structs.h"
+#include "src/Can/Structs/CanCCStructs.h"
 #include "src/Can/Structs/CanIgnitionStructs.h"
 #include "src/Can/Structs/CanMenuStructs.h"
 #include "src/Can/Handlers/CanRadioRemoteMessageHandler.h"
@@ -30,12 +31,12 @@
 #include "src/Can/Handlers/CanDash2MessageHandler.h"
 #include "src/Can/Handlers/CanDash3MessageHandler.h"
 #include "src/Can/Handlers/CanDash4MessageHandler.h"
-#include "src/Can/Handlers/CanParkingAidHandler.h"
+#include "src/Can/Handlers/CanCCMessageHandler.h"
 #include "src/Can/CanIgnitionTask.h"
 #include "src/Can/CanDataSenderTask.h"
 #include "src/Can/CanDataReaderTask.h"
 #include "src/Van/VanDataParserTask.h"
-#include "src/Van/VanWriterTask.h"
+//#include "src/Van/VanWriterTask.h"
 
 #if POPUP_HANDLER == 1
     #include "src/Can/Handlers/CanDisplayPopupHandler.h"
@@ -55,12 +56,12 @@
     #endif
 #endif
 
-#include "src/Van/AbstractVanMessageSender.h"
+//#include "src/Van/AbstractVanMessageSender.h"
 #include "src/Van/IVanMessageReader.h"
 
-#if HW_VERSION == 14
-    #include "src/Van/VanMessageSender.h"
-#endif
+//#if HW_VERSION == 14
+    //#include "src/Van/VanMessageSender.h"
+//#endif
 
 #include "src/Helpers/VanDataToBridgeToCan.h"
 #include "src/Helpers/VanIgnitionDataToBridgeToCan.h"
@@ -90,7 +91,7 @@ const uint8_t VAN_DATA_RX_RMT_CHANNEL = 0;
     const uint8_t CAN_RX_PIN = 18;
     const uint8_t CAN_TX_PIN = 15;
 
-    TaskHandle_t VANWriteTask;
+    //TaskHandle_t VANWriteTask;
 #endif
 
 const uint8_t VAN_DATA_RX_LED_INDICATOR_PIN = 2;
@@ -123,9 +124,10 @@ CanDash3MessageHandler* canDash3MessageHandler;
 CanDash4MessageHandler* canDash4MessageHandler;
 CanIgnitionPacketSender* radioIgnition;
 CanDashIgnitionPacketSender* dashIgnition;
-CanParkingAidHandler* canParkingAid;
+CanRadioButtonPacketSender* radioButtons;
 CanRadioButtonPacketSender* canRadioButtonSender;
 CanNaviPositionHandler* canNaviPositionHandler;
+CanCCMessageHandler* canCCMessageHandler;
 
 CanMessageHandlerContainer* canMessageHandlerContainer;
 VanHandlerContainer* vanHandlerContainer;
@@ -137,7 +139,7 @@ CanIgnitionTask* canIgnitionTask;
 CanDataSenderTask* canDataSenderTask;
 CanDataReaderTask* canDataReaderTask;
 VanDataParserTask* vanDataParserTask;
-VanWriterTask* vanWriterTask;
+//VanWriterTask* vanWriterTask;
 
 SerialReader* serialReader;
 
@@ -238,7 +240,7 @@ void VANReadTaskFunction(void * parameter)
     }
 }
 
-#if HW_VERSION == 14
+/*#if HW_VERSION == 14
 void VANWriteTaskFunction(void* parameter)
 {
     for (;;)
@@ -251,7 +253,7 @@ void VANWriteTaskFunction(void* parameter)
     }
 }
 #endif
-
+*/
 void InitSerialPort()
 {
     uint16_t uniqueIdForBluetooth = 0;
@@ -315,9 +317,10 @@ void setup()
     canDash4MessageHandler = new CanDash4MessageHandler(CANInterface);
     radioIgnition = new CanIgnitionPacketSender(CANInterface);
     dashIgnition = new CanDashIgnitionPacketSender(CANInterface);
-    canParkingAid = new CanParkingAidHandler(CANInterface);
     canRadioButtonSender = new CanRadioButtonPacketSender(CANInterface);
     canNaviPositionHandler = new CanNaviPositionHandler(CANInterface);
+    radioButtons = new CanRadioButtonPacketSender(CANInterface);
+    canCCMessageHandler = new CanCCMessageHandler(CANInterface);
 
     canMessageHandlerContainer = new CanMessageHandlerContainer(CANInterface, serialPort, vinFlashStorage);
 
@@ -326,20 +329,21 @@ void setup()
         tripInfoHandler,
         canStatusOfFunctionsHandler,
         canWarningLogHandler,
-        canRadioRemoteMessageHandler);
+        canRadioRemoteMessageHandler,
+        radioButtons);
 
     serialReader = new SerialReader(serialPort, CANInterface, tripInfoHandler, canRadioButtonSender, vinFlashStorage);
-    canIgnitionTask = new CanIgnitionTask(radioIgnition, dashIgnition, canParkingAid, canRadioRemoteMessageHandler, canStatusOfFunctionsHandler, canPopupHandler, canWarningLogHandler, canVinHandler);
+    canIgnitionTask = new CanIgnitionTask(radioIgnition, dashIgnition, canRadioRemoteMessageHandler, canStatusOfFunctionsHandler, canPopupHandler, canWarningLogHandler, canVinHandler);
     canDataSenderTask = new CanDataSenderTask(
         canSpeedAndRpmHandler, tripInfoHandler, canPopupHandler, canRadioRemoteMessageHandler, canDash2MessageHandler, canDash3MessageHandler,
-        canDash4MessageHandler, canRadioButtonSender, canNaviPositionHandler
+        canDash4MessageHandler, canCCMessageHandler, canRadioButtonSender, canNaviPositionHandler
 #ifdef SEND_AC_CHANGES_TO_DISPLAY
         , canAirConOnDisplayHandler
 #endif
         );
     canDataReaderTask = new CanDataReaderTask(CANInterface, canPopupHandler, canRadioRemoteMessageHandler, canMessageHandlerContainer, canDataSenderTask);
     vanDataParserTask = new VanDataParserTask(serialPort, canVinHandler, vanHandlerContainer);
-    vanWriterTask = new VanWriterTask();
+    //vanWriterTask = new VanWriterTask();
 
     xTaskCreatePinnedToCore(
         CANSendIgnitionTaskFunction,    // Function to implement the task
@@ -377,7 +381,7 @@ void setup()
         &CANReadTask,                   // Task handle.
         1);                             // Core where the task should run
 
-#if HW_VERSION == 14
+/*#if HW_VERSION == 14
     xTaskCreatePinnedToCore(
         VANWriteTaskFunction,                        // Function to implement the task
         "VANWriteTask",                  // Name of the task
@@ -387,7 +391,7 @@ void setup()
         &VANWriteTask,                   // Task handle.
         1);                             // Core where the task should run
 #endif
-
+*/
     esp_task_wdt_init(TASK_WATCHDOG_TIMEOUT, true);
     esp_task_wdt_add(VANReadTask);
 }

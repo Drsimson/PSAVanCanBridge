@@ -30,7 +30,7 @@ class CanDataSenderTask {
     uint16_t trip2Icon1Data = 0;
     uint16_t trip2Icon2Data = 0;
     uint16_t trip2Icon3Data = 0;
-    uint8_t ignition = 0;
+    uint8_t ignition = 1;
 
     CanSpeedAndRpmHandler* _canSpeedAndRpmHandler;
     CanTripInfoHandler* _tripInfoHandler;
@@ -39,6 +39,7 @@ class CanDataSenderTask {
     CanDash2MessageHandler* _canDash2MessageHandler;
     CanDash3MessageHandler* _canDash3MessageHandler;
     CanDash4MessageHandler* _canDash4MessageHandler;
+    CanCCMessageHandler* _canCCMessageHandler;
     CanRadioButtonPacketSender* _canRadioButtonSender;
     CanNaviPositionHandler* _canNaviPositionHandler;
 #ifdef SEND_AC_CHANGES_TO_DISPLAY
@@ -56,6 +57,7 @@ public:
         CanDash2MessageHandler* canDash2MessageHandler,
         CanDash3MessageHandler* canDash3MessageHandler,
         CanDash4MessageHandler* canDash4MessageHandler,
+        CanCCMessageHandler* canCCMessageHandler,
         CanRadioButtonPacketSender* canRadioButtonSender,
         CanNaviPositionHandler* canNaviPositionHandler
 #ifdef SEND_AC_CHANGES_TO_DISPLAY
@@ -70,6 +72,7 @@ public:
         _canDash2MessageHandler = canDash2MessageHandler;
         _canDash3MessageHandler = canDash3MessageHandler;
         _canDash4MessageHandler = canDash4MessageHandler;
+        _canCCMessageHandler = canCCMessageHandler;
         _canRadioButtonSender = canRadioButtonSender;
         _canNaviPositionHandler = canNaviPositionHandler;
 #ifdef SEND_AC_CHANGES_TO_DISPLAY
@@ -105,7 +108,7 @@ public:
         }
         if (DISPLAY_MODE == 2)
         {
-            trip0Icon1Data = round(FUEL_TANK_CAPACITY_IN_LITERS * dataToBridge.FuelLevel / 100);
+            trip0Icon1Data = dataToBridge.FuelLeftToPump;
             trip0Icon2Data = dataToBridge.FuelConsumption; //the current consumption
             trip0Icon3Data = dataToBridge.Speed;
 
@@ -119,7 +122,7 @@ public:
 
             if (dataToBridge.LeftStickButtonPressed)
             {
-                trip0Icon1Data = dataToBridge.FuelLevel;
+                trip0Icon1Data = round(FUEL_TANK_CAPACITY_IN_LITERS * dataToBridge.FuelLevel / 100);
                 trip0Icon3Data = dataToBridge.OilTemperature;
             }
         }
@@ -192,6 +195,20 @@ public:
                 #endif
             }
         #endif
+
+        #pragma endregion
+
+         #pragma region CC
+
+        _canCCMessageHandler->SetData(
+            dataToBridge.Van_4FC12,
+            dataToBridge.Van_4FC13,
+            dataToBridge.Van_4FC14,
+            dataToBridge.MileageByte1,
+            dataToBridge.MileageByte2,
+            dataToBridge.MileageByte3
+        );
+        _canCCMessageHandler->Process(currentTime);
 
         #pragma endregion
 
